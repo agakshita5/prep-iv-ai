@@ -1,14 +1,7 @@
 import asyncio
 import logging
 from dotenv import load_dotenv
-from livekit.agents import (
-    Agent,
-    AgentSession,
-    JobContext,
-    WorkerOptions,
-    cli,
-    ConversationItemAddedEvent,
-)
+from livekit.agents import ( Agent, AgentSession, JobContext, WorkerOptions, cli, ConversationItemAddedEvent )
 from livekit.agents.llm import ChatMessage # represent one msg in the conversation
 from livekit.plugins import groq
 from db import get_interview, insert_turn
@@ -27,11 +20,11 @@ async def entrypoint(ctx: JobContext):
     interview = await asyncio.to_thread(get_interview, interview_id)
     logger.info("starting interview %s", interview_id)
 
-    # When the interview ends (room closes), generate + save the reports.
-    async def _on_shutdown():
+    # when the interview ends, generate + save the reports.
+    async def on_shutdown():
         await asyncio.to_thread(run_scoring, interview_id)
 
-    ctx.add_shutdown_callback(_on_shutdown)
+    ctx.add_shutdown_callback(on_shutdown)
 
     # whole realtime pipeline
     session = AgentSession(
@@ -42,7 +35,7 @@ async def entrypoint(ctx: JobContext):
 
     # persist every finalized turn to Supabase for the report
     @session.on("conversation_item_added")
-    def _on_item(ev: ConversationItemAddedEvent):
+    def on_item(ev: ConversationItemAddedEvent):
         if not isinstance(ev.item, ChatMessage):
             return
         text = ev.item.text_content
