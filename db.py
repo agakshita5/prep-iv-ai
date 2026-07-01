@@ -9,8 +9,8 @@ def _client() -> Client:
         os.environ["SUPABASE_SECRET_KEY"],
     )
 
+# fetch one interview row by id
 def get_interview(interview_id: str) -> dict | None:
-    # fetch one interview row by id
     resp = (
         _client()
         .table("interviews")
@@ -22,8 +22,8 @@ def get_interview(interview_id: str) -> dict | None:
     return resp.data
 
 
+# append one transcript turn
 def insert_turn(interview_id: str, speaker: str, text: str) -> None:
-    # append one transcript turn
     if not text:
         return
     (
@@ -33,9 +33,8 @@ def insert_turn(interview_id: str, speaker: str, text: str) -> None:
         .execute()
     )
 
-
-def get_transcript(interview_id: str) -> list[dict]:
-    # all turns for an interview, oldest first (used by scoring)
+# fetch oldest transcript 
+def get_transcript(interview_id: str) -> list[dict]: 
     resp = (
         _client()
         .table("transcript_turns")
@@ -46,15 +45,8 @@ def get_transcript(interview_id: str) -> list[dict]:
     )
     return resp.data or []
 
-
-def save_evaluation(
-    interview_id: str,
-    candidate_report: dict | None = None,
-    recruiter_report: dict | None = None,
-    overall_score: int | None = None,
-    recommendation: str | None = None,
-) -> None:
-    # upsert: interview_id is the PK, so re-scoring overwrites the old report
+def save_evaluation( interview_id: str, candidate_report: dict | None, recruiter_report: dict | None, overall_score: int | None, recommendation: str | None) -> None:
+    # upsert: re-scoring overwrites the old report
     (
         _client()
         .table("evaluations")
