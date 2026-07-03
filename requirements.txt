@@ -1,5 +1,6 @@
 livekit-agents==1.6.4
 livekit-plugins-groq==1.6.4
+livekit-plugins-turn-detector==1.6.4
 groq==1.5.0
 supabase==2.31.0
 python-dotenv==1.2.2
