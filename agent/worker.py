@@ -1,9 +1,10 @@
 import asyncio
 import logging
 from dotenv import load_dotenv
-from livekit.agents import ( Agent, AgentSession, JobContext, WorkerOptions, cli, ConversationItemAddedEvent )
+from livekit.agents import ( Agent, AgentSession, JobContext, WorkerOptions, cli, ConversationItemAddedEvent, inference )
 from livekit.agents.llm import ChatMessage # represent one msg in the conversation
 from livekit.plugins import groq
+from livekit.plugins.turn_detector.english import EnglishModel  
 from db import get_interview, insert_turn
 from .prompt import build_instructions
 from scoring.run import run_scoring
@@ -28,9 +29,12 @@ async def entrypoint(ctx: JobContext):
 
     # whole realtime pipeline
     session = AgentSession(
-        stt=groq.STT(model="whisper-large-v3-turbo", language="en"),
-        llm=groq.LLM(model="llama-3.3-70b-versatile"),
-        tts=groq.TTS(model="canopylabs/orpheus-v1-english", voice="diana"),
+        stt=inference.STT(model="deepgram/nova-3", language="en"), 
+        llm=groq.LLM(model="llama-3.1-8b-instant"),
+        tts=inference.TTS(model="cartesia/sonic-2"),
+        turn_detection=EnglishModel(),
+        min_endpointing_delay=0.5,
+        max_endpointing_delay=6.0, 
     )
 
     # persist every finalized turn to Supabase for the report
@@ -51,6 +55,7 @@ async def entrypoint(ctx: JobContext):
         agent=Agent(instructions=build_instructions(interview)),
         room=ctx.room,
     )
+    logger.info("session started")
 
     # AI speaks first: greet + ask question one
     await session.generate_reply(
@@ -59,7 +64,7 @@ async def entrypoint(ctx: JobContext):
             "interviewer, and ask your first question."
         )
     )
-
+    logger.info("interview started - ai introduction")
 
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
