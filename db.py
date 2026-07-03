@@ -3,7 +3,7 @@ from functools import lru_cache
 from supabase import create_client, Client
 
 @lru_cache(maxsize=1)
-def _client() -> Client:
+def client() -> Client:
     return create_client(
         os.environ["SUPABASE_URL"],
         os.environ["SUPABASE_SECRET_KEY"],
@@ -12,7 +12,7 @@ def _client() -> Client:
 # fetch one interview row by id
 def get_interview(interview_id: str) -> dict | None:
     resp = (
-        _client()
+        client()
         .table("interviews")
         .select("*")
         .eq("id", interview_id)
@@ -27,7 +27,7 @@ def insert_turn(interview_id: str, speaker: str, text: str) -> None:
     if not text:
         return
     (
-        _client()
+        client()
         .table("transcript_turns")
         .insert({"interview_id": interview_id, "speaker": speaker, "text": text})
         .execute()
@@ -36,7 +36,7 @@ def insert_turn(interview_id: str, speaker: str, text: str) -> None:
 # fetch oldest transcript 
 def get_transcript(interview_id: str) -> list[dict]: 
     resp = (
-        _client()
+        client()
         .table("transcript_turns")
         .select("*")
         .eq("interview_id", interview_id)
@@ -48,7 +48,7 @@ def get_transcript(interview_id: str) -> list[dict]:
 def save_evaluation( interview_id: str, candidate_report: dict | None, recruiter_report: dict | None, overall_score: int | None, recommendation: str | None) -> None:
     # upsert: re-scoring overwrites the old report
     (
-        _client()
+        client()
         .table("evaluations")
         .upsert(
             {
