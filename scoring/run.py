@@ -5,7 +5,7 @@ import logging
 from db import get_interview, get_transcript, save_evaluation
 from .evaluator import evaluate, format_transcript
 from .verify import verify
-from .insights import speaking_insights
+from .insights import speaking_insights, qa_pairs
 from .report_prompts import build_candidate_report, build_recruiter_report
 
 logger = logging.getLogger("prepiv-scoring")
@@ -23,7 +23,9 @@ def run_scoring(interview_id: str) -> None:
     insights = speaking_insights(turns)                     # measured speaking metrics (fillers, pace)
 
     candidate_report = build_candidate_report(scored, insights)
-    recruiter_report = build_recruiter_report(scored, interview) if interview.get("recruiter_id") else None       
+    candidate_report["questions"] = qa_pairs(turns)
+
+    recruiter_report = build_recruiter_report(scored, interview) if interview.get("recruiter_id") else None
     
     save_evaluation(
         interview_id,
