@@ -1,6 +1,8 @@
 def build_instructions(interview: dict | None) -> str:
     interview = interview or {}
     role = interview.get("role_title") or "the role"
+    isCandidateCreator = True if (interview.get("recruiter_id") is None) else False
+    
     jd = (interview.get("jd_text") or "").strip()
     resume = (interview.get("resume_text") or "").strip()
 
@@ -11,7 +13,8 @@ def build_instructions(interview: dict | None) -> str:
         "Adapt every follow-up to what the candidate just said: ask for specifics and",
         "examples, and probe gaps between their resume and the job description.",
         "Keep your turns short and conversational — this is voice, not an essay.",
-        "Ask roughly 5-7 questions total, then thank the candidate and wrap up.",
+        "Ask roughly 5-7 questions total, then thank the candidate and wrap up."
+        f"If {isCandidateCreator}, don't mention any hiring reference while wraping up.",
     ]
 
     if jd:
