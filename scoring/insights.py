@@ -12,7 +12,7 @@ def parse_ts(s: str | None) -> datetime | None:
     except ValueError:
         return None
 
-
+# turns: transcripts
 def speaking_insights(turns: list[dict]) -> dict:
     user_turns = [t for t in turns if t["speaker"] == "user"]
     text = " ".join(t["text"] for t in user_turns).lower()
@@ -40,3 +40,19 @@ def speaking_insights(turns: list[dict]) -> dict:
         "filler_words": {"count": filler_count, "examples": found},
         "interruptions": None,  # TODO: needs barge-in logging from the agent
     }
+
+
+def qa_pairs(turns: list[dict]) -> list[dict]:
+    pairs = []
+    last_q = None
+    last_q_ts = None
+    for t in turns:
+        if t["speaker"] == "ai":
+            last_q = t["text"]
+            last_q_ts = parse_ts(t.get("created_at"))
+        elif t["speaker"] == "user" and last_q is not None:
+            a_ts = parse_ts(t.get("created_at"))
+            secs = round((a_ts - last_q_ts).total_seconds()) if (last_q_ts and a_ts) else None
+            pairs.append({"question": last_q, "answer": t["text"], "response_seconds": secs})
+            last_q = None  
+    return pairs
