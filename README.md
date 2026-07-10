@@ -24,3 +24,5 @@ interview in the web app and the agent will greet you and start asking questions
 - `agent/prompt.py` — builds the adaptive system prompt from role/JD/resume
 - `db.py` — Supabase reads/writes (same project as the web app)
 - `scoring/` - scoring workflow
+
+Note: Recruiter-side functionality is in progress.
