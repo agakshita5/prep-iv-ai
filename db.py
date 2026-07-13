@@ -61,3 +61,12 @@ def save_evaluation( interview_id: str, candidate_report: dict | None, recruiter
         )
         .execute()
     )
+
+def set_iv_status(interview_id: str, status: str):
+    (
+        client()
+        .table("interviews")
+        .update({"status": status})
+        .eq("id", interview_id)
+        .execute()
+    )
