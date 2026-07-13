@@ -51,8 +51,8 @@ def qa_pairs(turns: list[dict]) -> list[dict]:
             last_q = t["text"]
             last_q_ts = parse_ts(t.get("created_at"))
         elif t["speaker"] == "user" and last_q is not None:
-            a_ts = parse_ts(t.get("created_at"))
-            secs = round((a_ts - last_q_ts).total_seconds()) if (last_q_ts and a_ts) else None
+            ans_ts = parse_ts(t.get("created_at"))
+            secs = round((ans_ts - last_q_ts).total_seconds()) if (last_q_ts and ans_ts) else None
             pairs.append({"question": last_q, "answer": t["text"], "response_seconds": secs})
             last_q = None  
     return pairs
